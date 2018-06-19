@@ -288,29 +288,36 @@ def lambda_handler(event, context):
 
     print(event)
     
+    #The user has just launched the skill
     if event['request']['type'] == "LaunchRequest":
         return mathPractice_launch(event, context)
         
+    #The user is interacting with the skill post-launch
     if event['request']['type'] == "IntentRequest":
         print('got IntentRequest')
         print(event['request'])
         
+        #The user is ready to start a new game
         if event['request']['intent']['name'] == "readyIntent":
             print('got readyIntent')
             return mathPractice_startPractice(event, context)
             
+        #The user gives an answer
         if event['request']['intent']['name'] == "answerIntent":
             print('got answerIntent')
             return mathPractice_gotAnswer(event, context)
             
+        #The user asks for the question to be repeated
         if event['request']['intent']['name'] == "repeatIntent":
             print('got repeatIntent')
             return mathPractice_repeatQuestion(event, context)
             
+        #The user is done
         if event['request']['intent']['name'] == "AMAZON.StopIntent":
             print('got AMAZON.StopIntent')
             return mathPractice_endPractice(event, context)
             
+        #Alexa didn't understand the user's request
         if event['request']['intent']['name'] == "AMAZON.FallbackIntent":
             print('got AMAZON.FallbackIntent')
             return mathPractice_fallback(event, context)
