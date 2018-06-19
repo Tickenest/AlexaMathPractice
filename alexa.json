@@ -1,0 +1,102 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "math practice",
+            "intents": [
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": [
+                        "done"
+                    ]
+                },
+                {
+                    "name": "answerIntent",
+                    "slots": [
+                        {
+                            "name": "answer",
+                            "type": "AMAZON.NUMBER"
+                        },
+                        {
+                            "name": "minus",
+                            "type": "minusWord"
+                        }
+                    ],
+                    "samples": [
+                        "{minus} {answer}",
+                        "{answer}"
+                    ]
+                },
+                {
+                    "name": "readyIntent",
+                    "slots": [],
+                    "samples": [
+                        "restart game",
+                        "restart",
+                        "start",
+                        "start new game",
+                        "start game",
+                        "ready"
+                    ]
+                },
+                {
+                    "name": "repeatIntent",
+                    "slots": [],
+                    "samples": [
+                        "say again",
+                        "say that again",
+                        "say it again",
+                        "repeat it",
+                        "repeat that one",
+                        "repeat the question",
+                        "repeat question",
+                        "repeat"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "operationType",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "minus"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "plus"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "minusWord",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "negative"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "minus"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
