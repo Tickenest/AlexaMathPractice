@@ -25,10 +25,14 @@ def mathPractice_launch(event, context):
     
     '''Launches the Math Practice Alexa skill.'''
     
-    outStr = "I'll tell you a math question. Don't say Alexa, just say your answer. " + \
+    outStr = "<speak>I'll tell you a math question. Don't say Alexa, just say your answer. " + \
             "I'll tell you if you're right or wrong, and then give you another question. " + \
-            "Say the word ready to start the session, the word restart to restart the " + \
-            "session, and the word done to end the session."
+            "Say the word <break time='200ms'/>ready<break time='200ms'/> " + \
+            "to start the session, the word " + \
+            "<break time='200ms'/>restart<break time='200ms'/> to " + \
+            "restart the session, and the word " + \
+            "<break time='200ms'/>done<break time='200ms'/> or " + \
+            "<break time='200ms'/>stop<break time='200ms'/> to end the session.</speak>"
 
     #Python dictionary with the response information.  Keep the session alive.
     response = {
@@ -39,8 +43,14 @@ def mathPractice_launch(event, context):
         },
         "response": {
             "outputSpeech": {
+                "type": "SSML",
+                "ssml": outStr
+            },
+            "reprompt": {
+                "outputSpeech": {
                 "type": "PlainText",
-                "text": outStr
+                "text": "Are you ready to begin?"
+                },
             },
             "shouldEndSession": 'false'
         }
@@ -89,6 +99,12 @@ def mathPractice_startPractice(event, context):
                 "type": "PlainText",
                 "text": outStr,
             },
+            "reprompt": {
+                "outputSpeech": {
+                "type": "PlainText",
+                "text": "I'll repeat the question. {0}".format(questionStr)
+                },
+            },
             "shouldEndSession": 'false'
         }
     }
@@ -103,7 +119,7 @@ def mathPractice_repeatQuestion(event, context):
     mathType = event['session']['attributes']['mathType']
     firstNum = event['session']['attributes']['firstNum']
     secondNum = event['session']['attributes']['secondNum']
-    correctAnswer = int(event['session']['attributes']['correctAnswer'])
+    correctAnswer = event['session']['attributes']['correctAnswer']
     
     #Repeat the previous question
     outStr = "I'll repeat the question. {0} {1} {2}".format(firstNum, mathType, secondNum)
@@ -124,6 +140,12 @@ def mathPractice_repeatQuestion(event, context):
                 "type": "PlainText",
                 "text": outStr,
             },
+            "reprompt": {
+                "outputSpeech": {
+                "type": "PlainText",
+                "text": "I'll repeat the question. {0}".format(outStr)
+                },
+            },
             "shouldEndSession": 'false'
         }
     }
@@ -133,6 +155,40 @@ def mathPractice_gotAnswer(event, context):
     
     '''Handles the user's input answer, updates the score, and serves up the
     next question.'''
+    
+    #Make sure that an actual game is in progress first.  If not, let the user
+    #know that a game hasn't started yet.
+    try:
+        correctAnswer = event['session']['attributes']['correctAnswer']
+    except:
+        outStr = "<speak>Hey, we haven't even started yet! Say the word " + \
+        "<break time='200ms'/>ready<break time='200ms'/> to start the " + \
+        "game, the word <break time='250ms'/>restart<break time='250ms'/> " + \
+        "to restart a game, and the word " + \
+        "<break time='200ms'/>done<break time='200ms'/> or " + \
+        "<break time='200ms'/>stop<break time='200ms'/> to stop the game.</speak>"
+        #Python dictionary with the response information.  Keep the session alive.
+        response = {
+            "version": "1.0",
+            "sessionAttributes": {
+                "numRight": 0,
+                "numTotal": 0
+            },
+            "response": {
+                "outputSpeech": {
+                    "type": "SSML",
+                    "ssml": outStr
+                },
+                "reprompt": {
+                    "outputSpeech": {
+                    "type": "PlainText",
+                    "text": "Are you ready to begin?"
+                    },
+                },
+                "shouldEndSession": 'false'
+            }
+        }
+        return response
     
     #Get the user's numeric answer
     userAnswer = int(event['request']['intent']['slots']['answer']['value'])
@@ -153,7 +209,6 @@ def mathPractice_gotAnswer(event, context):
     #Get the needed information to check the answer and update the score
     numRight = event['session']['attributes']['numRight']
     numTotal = event['session']['attributes']['numTotal']
-    correctAnswer = int(event['session']['attributes']['correctAnswer'])
     
     #Now actually check whether the user's right or not
     if userAnswer == correctAnswer:
@@ -164,10 +219,10 @@ def mathPractice_gotAnswer(event, context):
     numTotal += 1
     
     #Generate the next question and get all of the pertinent info surrounding it
-    correctAnswer, outStr, firstNum, mathType, secondNum = getMathQuestion(0,12,['plus','minus'])
+    correctAnswer, questionStr, firstNum, mathType, secondNum = getMathQuestion(0,12,['plus','minus'])
     
     #Generate Alexa's next statement
-    outStr = outStrStart + outStr
+    outStr = outStrStart + questionStr
 
     #Python dictionary with the response information.  Keep the session alive.
     response = {
@@ -184,6 +239,12 @@ def mathPractice_gotAnswer(event, context):
             "outputSpeech": {
                 "type": "PlainText",
                 "text": outStr,
+            },
+            "reprompt": {
+                "outputSpeech": {
+                "type": "PlainText",
+                "text": "I'll repeat the question. {0}".format(questionStr)
+                },
             },
             "shouldEndSession": 'false'
         }
