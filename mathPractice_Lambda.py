@@ -1,5 +1,7 @@
 import random
 
+########## getMathQuestion ##########
+
 def getMathQuestion(minNum, maxNum, types):
     
     '''Generates a math question for the function'''
@@ -20,6 +22,51 @@ def getMathQuestion(minNum, maxNum, types):
     #Create the question string and return the necessary info
     outStr = '{0} {1} {2}'.format(str(firstNum), mathType, str(secondNum))
     return (correctAnswer, outStr, firstNum, mathType, secondNum)
+    
+########## dataToJSON ##########
+    
+def dataToJSON(values):
+    
+    '''Creates JSON out of the input values.
+    
+    Order: 0:numRight, 1:numTotal, 2:firstNum, 3:secondNum, 4:correctAnswer,
+    5:mathType, 6:outputSpeech output type, 7:outputSpeect text/ssml,
+    8:outputSpeech output string, 9:card type,
+    10:card title, 11:card content, 12:reprompt outputSpeech type,
+    13:reprompt outputSpeech text/ssml, 14: reprompt outputSpeech output string,
+    15:shouldEndSession'''
+    
+    response = {
+        "version": "1.0",
+        "sessionAttributes": {
+            "numRight": values[0],
+            'numTotal': values[1],
+            'firstNum': values[2],
+            'secondNum': values[3],
+            'correctAnswer': values[4],
+            'mathType': values[5]
+        },
+        "response": {
+            "outputSpeech": {
+                "type": values[6],
+                values[7]: values[8]
+            },
+            "card": {
+                "type": values[9],
+                "title": values[10],
+                "content": values[11]
+            },
+            "reprompt": {
+                "outputSpeech": {
+                "type": values[12],
+                values[13]: values[14]
+                },
+            },
+            "shouldEndSession": values[15]
+        }
+    }
+    
+    return response
 
 def mathPractice_launch(event, context):
     
@@ -40,32 +87,10 @@ def mathPractice_launch(event, context):
             "restart to restart the session, and the word " + \
             "done or stop to end the session."
 
-    #Python dictionary with the response information.  Keep the session alive.
-    response = {
-        "version": "1.0",
-        "sessionAttributes": {
-            "numRight": 0,
-            "numTotal": 0
-        },
-        "response": {
-            "outputSpeech": {
-                "type": "SSML",
-                "ssml": outStr
-            },
-            "card": {
-                "type": "Simple",
-                "title": "Math Practice",
-                "content": outCardStr
-            },
-            "reprompt": {
-                "outputSpeech": {
-                "type": "PlainText",
-                "text": "Are you ready to begin?"
-                },
-            },
-            "shouldEndSession": 'false'
-        }
-    }
+    response = dataToJSON([0, 0, '', '', '', '', 'SSML',
+    'ssml', outStr, 'Simple', 'Math Practice', outCardStr,
+    'PlainText', 'text', 'Are you ready to begin?', 'false'])
+    
     return response
     
 def mathPractice_startPractice(event, context):
@@ -94,37 +119,12 @@ def mathPractice_startPractice(event, context):
     #Build the output text string for Alexa to say
     outStr = outStr + '\n' + questionStr
     outCardStr = outStr.replace('plus', '+').replace('minus','-').replace('times','x')
+
+    response = dataToJSON([0, 0, firstNum, secondNum, correctAnswer, mathType,
+    'PlainText', 'text', outStr, 'Simple', 'Math Practice', outCardStr,
+    'PlainText', 'text', "I'll repeat the question. {0}".format(questionStr),
+    'false'])
     
-    #Python dictionary with the response information.  Keep the session alive.
-    response = {
-        "version": "1.0",
-        "sessionAttributes": {
-            "numRight": 0,
-            "numTotal": 0,
-            "firstNum": firstNum,
-            "secondNum": secondNum,
-            "correctAnswer": correctAnswer,
-            "mathType": mathType
-        },
-        "response": {
-            "outputSpeech": {
-                "type": "PlainText",
-                "text": outStr,
-            },
-            "card": {
-                "type": "Simple",
-                "title": "Math Practice",
-                "content": outCardStr
-            },
-            "reprompt": {
-                "outputSpeech": {
-                "type": "PlainText",
-                "text": "I'll repeat the question. {0}".format(questionStr)
-                },
-            },
-            "shouldEndSession": 'false'
-        }
-    }
     return response
     
 def mathPractice_repeatQuestion(event, context):
@@ -141,37 +141,13 @@ def mathPractice_repeatQuestion(event, context):
     #Repeat the previous question
     outStr = "I'll repeat the question.\n{0} {1} {2}".format(firstNum, mathType, secondNum)
     outCardStr = outStr.replace('plus', '+').replace('minus','-').replace('times','x')
+
+    response = dataToJSON([numRight, numTotal, firstNum, secondNum,
+    correctAnswer, mathType, 'PlainText', 'text', outStr, 'Simple',
+    'Math Practice', outCardStr, 'PlainText', 'text',
+    "I'll repeat the question. {0} {1} {2}".format(firstNum, mathType, secondNum),
+    'false'])
     
-    #Python dictionary with the response information.  Keep the session alive.
-    response = {
-        "version": "1.0",
-        "sessionAttributes": {
-            "numRight": numRight,
-            "numTotal": numTotal,
-            "firstNum": firstNum,
-            "secondNum": secondNum,
-            "correctAnswer": correctAnswer,
-            "mathType": mathType
-        },
-        "response": {
-            "outputSpeech": {
-                "type": "PlainText",
-                "text": outStr,
-            },
-            "card": {
-                "type": "Simple",
-                "title": "Math Practice",
-                "content": outCardStr
-            },
-            "reprompt": {
-                "outputSpeech": {
-                "type": "PlainText",
-                "text": "I'll repeat the question. {0}".format(outStr)
-                },
-            },
-            "shouldEndSession": 'false'
-        }
-    }
     return response
     
 def mathPractice_gotAnswer(event, context):
@@ -182,7 +158,7 @@ def mathPractice_gotAnswer(event, context):
     #Make sure that an actual game is in progress first.  If not, let the user
     #know that a game hasn't started yet.
     try:
-        correctAnswer = event['session']['attributes']['correctAnswer']
+        correctAnswer = int(event['session']['attributes']['correctAnswer'])
     except:
         outStr = "<speak>Hey, we haven't even started yet! Say the word " + \
         "<break time='200ms'/>ready<break time='200ms'/> to start the " + \
@@ -195,37 +171,24 @@ def mathPractice_gotAnswer(event, context):
         "ready to start the game, the word restart " + \
         "to restart a game, and the word done or " + \
         "stop to stop the game."
-        
-        #Python dictionary with the response information.  Keep the session alive.
-        response = {
-            "version": "1.0",
-            "sessionAttributes": {
-                "numRight": 0,
-                "numTotal": 0
-            },
-            "response": {
-                "outputSpeech": {
-                    "type": "SSML",
-                    "ssml": outStr
-                },
-                "card": {
-                    "type": "Simple",
-                    "title": "Math Practice",
-                    "content": outCardStr
-                },
-                "reprompt": {
-                    "outputSpeech": {
-                    "type": "PlainText",
-                    "text": "Are you ready to begin?"
-                    },
-                },
-                "shouldEndSession": 'false'
-            }
-        }
+
+        response = dataToJSON([0, 0, '', '', '', '',
+        'SSML', 'ssml', outStr, 'Simple', 'Math Practice', outCardStr,
+        'PlainText', 'text', "Are you ready to begin?",
+        'false'])
+    
         return response
     
     #Get the user's numeric answer
-    userAnswer = int(event['request']['intent']['slots']['answer']['value'])
+    userAnswer = event['request']['intent']['slots']['answer']['value']
+    
+    #If there is a '?' in the user's answer, then Alexa didn't understand the
+    #response but didn't trigger the Fallback intent.  In that case, throw it to
+    #the Fallback intent for the response
+    if '?' in userAnswer:
+        return mathPractice_fallback(event, context)
+    else:
+        userAnswer = int(userAnswer)
     
     #See if the user said "negative" or "minus" before the answer.  Alexa
     #doesn't always handle negative numbers well, so we've got an extra {minus}
@@ -259,36 +222,11 @@ def mathPractice_gotAnswer(event, context):
     outStr = outStrStart + '\n' + questionStr
     outCardStr = outStr.replace('plus', '+').replace('minus','-').replace('times','x')
 
-    #Python dictionary with the response information.  Keep the session alive.
-    response = {
-        "version": "1.0",
-        "sessionAttributes": {
-            "numRight": numRight,
-            "numTotal": numTotal,
-            "firstNum": firstNum,
-            "secondNum": secondNum,
-            "correctAnswer": correctAnswer,
-            "mathType": mathType
-        },
-        "response": {
-            "outputSpeech": {
-                "type": "PlainText",
-                "text": outStr,
-            },
-            "card": {
-                "type": "Simple",
-                "title": "Math Practice",
-                "content": outCardStr
-            },
-            "reprompt": {
-                "outputSpeech": {
-                "type": "PlainText",
-                "text": "I'll repeat the question. {0}".format(questionStr)
-                },
-            },
-            "shouldEndSession": 'false'
-        }
-    }
+    response = dataToJSON([numRight, numTotal, firstNum, secondNum,
+    correctAnswer, mathType, 'PlainText', 'text', outStr, 'Simple',
+    'Math Practice', outCardStr, 'PlainText', 'text',
+    "I'll repeat the question. {0}".format(questionStr), 'false'])
+    
     return response
     
 def mathPractice_endPractice(event, context):
@@ -309,23 +247,12 @@ def mathPractice_endPractice(event, context):
         outStr = 'You got {0} out of {1} right. Thanks for playing!'.format(numRight, numTotal)
         
     outCardStr = outStr
-    
-    #Python dictionary with the response information.  End the session.
-    response = {
-        "version": "1.0",
-        "response": {
-            "outputSpeech": {
-                "type": "PlainText",
-                "text": outStr
-            },
-            "card": {
-                "type": "Simple",
-                "title": "Math Practice",
-                "content": outCardStr
-            },
-            "shouldEndSession": 'true'
-        }
-    }
+
+    response = dataToJSON(['', '', '', '',
+    '', '', 'PlainText', 'text', outStr, 'Simple',
+    'Math Practice', outCardStr, 'PlainText', 'text',
+    '', 'true'])
+
     return response
     
 def mathPractice_fallback(event, context):
@@ -349,31 +276,13 @@ def mathPractice_fallback(event, context):
         #current question
         outStr = "Sorry, I didn't understand your response.\n{0} {1} {2}".format(firstNum, mathType, secondNum)
         outCardStr = outStr
+
+        response = dataToJSON([numRight, numTotal, firstNum, secondNum,
+        correctAnswer, mathType, 'PlainText', 'text', outStr, 'Simple',
+        'Math Practice', outCardStr, 'PlainText', 'text',
+        "I'll repeat the question. {0} {1} {2}".format(firstNum, mathType, secondNum),
+        'false'])
         
-        #Python dictionary with the response information.  Keep the session alive.
-        response = {
-            "version": "1.0",
-            "sessionAttributes": {
-                "numRight": numRight,
-                "numTotal": numTotal,
-                "firstNum": firstNum,
-                "secondNum": secondNum,
-                "correctAnswer": correctAnswer,
-                "mathType": mathType
-            },
-            "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": outStr
-                },
-                "card": {
-                    "type": "Simple",
-                    "title": "Math Practice",
-                    "content": outCardStr
-                },
-                "shouldEndSession": 'false'
-            }
-        }
     except:
         #If we get here, then no session has begun yet, so just restate the
         #start, repeat, and end commands again
@@ -381,27 +290,12 @@ def mathPractice_fallback(event, context):
         "ready to start the game, the word restart to restart a game, and " + \
         "the word stop to stop the game."
         outCardStr = outStr
-    
-        #Python dictionary with the response information.  Keep the session alive.
-        response = {
-            "version": "1.0",
-            "sessionAttributes": {
-                "numRight": 0,
-                "numTotal": 0
-            },
-            "response": {
-                "outputSpeech": {
-                    "type": "PlainText",
-                    "text": outStr
-                },
-                "card": {
-                    "type": "Simple",
-                    "title": "Math Practice",
-                    "content": outCardStr
-                },
-                "shouldEndSession": 'false'
-            }
-        }
+        
+        response = dataToJSON([0, 0, '', '',
+        '', '', 'PlainText', 'text', outStr, 'Simple',
+        'Math Practice', outCardStr, 'PlainText', 'text',
+        outStr, 'false'])
+        
     return response
 
 def lambda_handler(event, context):
