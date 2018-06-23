@@ -33,6 +33,12 @@ def mathPractice_launch(event, context):
             "restart the session, and the word " + \
             "<break time='200ms'/>done<break time='200ms'/> or " + \
             "<break time='200ms'/>stop<break time='200ms'/> to end the session.</speak>"
+            
+    outCardStr = "I'll tell you a math question. Don't say Alexa, just say your answer. " + \
+            "I'll tell you if you're right or wrong, and then give you another question. " + \
+            "Say the word ready to start the session, the word " + \
+            "restart to restart the session, and the word " + \
+            "done or stop to end the session."
 
     #Python dictionary with the response information.  Keep the session alive.
     response = {
@@ -45,6 +51,11 @@ def mathPractice_launch(event, context):
             "outputSpeech": {
                 "type": "SSML",
                 "ssml": outStr
+            },
+            "card": {
+                "type": "Simple",
+                "title": "Math Practice",
+                "content": outCardStr
             },
             "reprompt": {
                 "outputSpeech": {
@@ -81,7 +92,8 @@ def mathPractice_startPractice(event, context):
     correctAnswer, questionStr, firstNum, mathType, secondNum = getMathQuestion(0,12,['plus','minus'])
     
     #Build the output text string for Alexa to say
-    outStr = outStr + questionStr
+    outStr = outStr + '\n' + questionStr
+    outCardStr = outStr.replace('plus', '+').replace('minus','-').replace('times','x')
     
     #Python dictionary with the response information.  Keep the session alive.
     response = {
@@ -98,6 +110,11 @@ def mathPractice_startPractice(event, context):
             "outputSpeech": {
                 "type": "PlainText",
                 "text": outStr,
+            },
+            "card": {
+                "type": "Simple",
+                "title": "Math Practice",
+                "content": outCardStr
             },
             "reprompt": {
                 "outputSpeech": {
@@ -122,7 +139,8 @@ def mathPractice_repeatQuestion(event, context):
     correctAnswer = event['session']['attributes']['correctAnswer']
     
     #Repeat the previous question
-    outStr = "I'll repeat the question. {0} {1} {2}".format(firstNum, mathType, secondNum)
+    outStr = "I'll repeat the question.\n{0} {1} {2}".format(firstNum, mathType, secondNum)
+    outCardStr = outStr.replace('plus', '+').replace('minus','-').replace('times','x')
     
     #Python dictionary with the response information.  Keep the session alive.
     response = {
@@ -139,6 +157,11 @@ def mathPractice_repeatQuestion(event, context):
             "outputSpeech": {
                 "type": "PlainText",
                 "text": outStr,
+            },
+            "card": {
+                "type": "Simple",
+                "title": "Math Practice",
+                "content": outCardStr
             },
             "reprompt": {
                 "outputSpeech": {
@@ -167,6 +190,12 @@ def mathPractice_gotAnswer(event, context):
         "to restart a game, and the word " + \
         "<break time='200ms'/>done<break time='200ms'/> or " + \
         "<break time='200ms'/>stop<break time='200ms'/> to stop the game.</speak>"
+        
+        outCardStr = "Hey, we haven't even started yet! Say the word " + \
+        "ready to start the game, the word restart " + \
+        "to restart a game, and the word done or " + \
+        "stop to stop the game."
+        
         #Python dictionary with the response information.  Keep the session alive.
         response = {
             "version": "1.0",
@@ -178,6 +207,11 @@ def mathPractice_gotAnswer(event, context):
                 "outputSpeech": {
                     "type": "SSML",
                     "ssml": outStr
+                },
+                "card": {
+                    "type": "Simple",
+                    "title": "Math Practice",
+                    "content": outCardStr
                 },
                 "reprompt": {
                     "outputSpeech": {
@@ -222,7 +256,8 @@ def mathPractice_gotAnswer(event, context):
     correctAnswer, questionStr, firstNum, mathType, secondNum = getMathQuestion(0,12,['plus','minus'])
     
     #Generate Alexa's next statement
-    outStr = outStrStart + questionStr
+    outStr = outStrStart + '\n' + questionStr
+    outCardStr = outStr.replace('plus', '+').replace('minus','-').replace('times','x')
 
     #Python dictionary with the response information.  Keep the session alive.
     response = {
@@ -239,6 +274,11 @@ def mathPractice_gotAnswer(event, context):
             "outputSpeech": {
                 "type": "PlainText",
                 "text": outStr,
+            },
+            "card": {
+                "type": "Simple",
+                "title": "Math Practice",
+                "content": outCardStr
             },
             "reprompt": {
                 "outputSpeech": {
@@ -267,6 +307,8 @@ def mathPractice_endPractice(event, context):
         outStr = 'Thanks for playing!'
     else:
         outStr = 'You got {0} out of {1} right. Thanks for playing!'.format(numRight, numTotal)
+        
+    outCardStr = outStr
     
     #Python dictionary with the response information.  End the session.
     response = {
@@ -275,6 +317,11 @@ def mathPractice_endPractice(event, context):
             "outputSpeech": {
                 "type": "PlainText",
                 "text": outStr
+            },
+            "card": {
+                "type": "Simple",
+                "title": "Math Practice",
+                "content": outCardStr
             },
             "shouldEndSession": 'true'
         }
@@ -300,7 +347,8 @@ def mathPractice_fallback(event, context):
         
         #Tell the user that Alexa didn't understand and then restate the
         #current question
-        outStr = "Sorry, I didn't understand your response. {0} {1} {2}".format(firstNum, mathType, secondNum)
+        outStr = "Sorry, I didn't understand your response.\n{0} {1} {2}".format(firstNum, mathType, secondNum)
+        outCardStr = outStr
         
         #Python dictionary with the response information.  Keep the session alive.
         response = {
@@ -318,6 +366,11 @@ def mathPractice_fallback(event, context):
                     "type": "PlainText",
                     "text": outStr
                 },
+                "card": {
+                    "type": "Simple",
+                    "title": "Math Practice",
+                    "content": outCardStr
+                },
                 "shouldEndSession": 'false'
             }
         }
@@ -327,6 +380,7 @@ def mathPractice_fallback(event, context):
         outStr = "Sorry, I didn't understand your response. Say the word " + \
         "ready to start the game, the word restart to restart a game, and " + \
         "the word stop to stop the game."
+        outCardStr = outStr
     
         #Python dictionary with the response information.  Keep the session alive.
         response = {
@@ -339,6 +393,11 @@ def mathPractice_fallback(event, context):
                 "outputSpeech": {
                     "type": "PlainText",
                     "text": outStr
+                },
+                "card": {
+                    "type": "Simple",
+                    "title": "Math Practice",
+                    "content": outCardStr
                 },
                 "shouldEndSession": 'false'
             }
