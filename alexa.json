@@ -18,6 +18,12 @@
                 {
                     "name": "AMAZON.StopIntent",
                     "samples": [
+                        "finished",
+                        "finish",
+                        "end",
+                        "cancel",
+                        "stop",
+                        "quit",
                         "done"
                     ]
                 },
@@ -42,6 +48,10 @@
                     "name": "readyIntent",
                     "slots": [],
                     "samples": [
+                        "start the game",
+                        "begin the game",
+                        "begin game",
+                        "begin",
                         "restart game",
                         "restart",
                         "start",
